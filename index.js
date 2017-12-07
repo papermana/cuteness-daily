@@ -8,6 +8,8 @@ const firebase = require('firebase');
 const fetch = require('node-fetch');
 const schedule = require('node-schedule');
 
+const ProcessingQueue = require('./ProcessingQueue.js');
+
 
 /*  CONFIG  */
 
@@ -53,11 +55,6 @@ const initializeApp = () => {
 
 const db = initializeDb();
 const app = initializeApp();
-
-const messageQueue = {
-  queue: [],
-  processing: false,
-};
 
 
 /*  UTILS  */
@@ -181,8 +178,7 @@ const sendAnimalPics = () => {
 
 /*  MESSAGE QUEUE HANDLING  */
 
-const processMessageQueue = () => {
-  const data = messageQueue.queue.shift();
+const messageQueue = new ProcessingQueue(data => {
   const {
     team_id: teamId,
     event: { text, user },
@@ -197,22 +193,7 @@ const processMessageQueue = () => {
         postResponseToSadMessage(coll.get('incoming_webhook').url, user);
       });
   }
-
-  if (messageQueue.queue.length) {
-    processMessageQueue();
-  } else {
-    messageQueue.processing = false;
-  }
-}
-
-const addToMessageQueue = data => {
-  messageQueue.queue.push(data);
-
-  if (!messageQueue.processing) {
-    messageQueue.processing = true;
-    processMessageQueue();
-  }
-};
+});
 
 
 /*  ROUTES  */
@@ -294,7 +275,7 @@ app.post(routes.events, (req, res) => {
       req.body.event.type === 'message'
         && req.body.event.subtype !== 'bot_message'
     ) {
-      addToMessageQueue(req.body);
+      messageQueue.add(req.body);
 
       res.status(200);
       res.send();
