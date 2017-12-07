@@ -275,7 +275,19 @@ app.post(routes.events, (req, res) => {
       req.body.event.type === 'message'
         && req.body.event.subtype !== 'bot_message'
     ) {
-      messageQueue.add(req.body);
+      db
+        .collection(collections.integrations)
+        .doc(req.body.team_id)
+        .get()
+        .then(data => {
+          const assignedChannel = data.get('incoming_webhook').channel_id;
+
+          if (req.body.event.channel !== assignedChannel) {
+            return;
+          }
+
+          messageQueue.add(req.body);
+        });
 
       res.status(200);
       res.send();
