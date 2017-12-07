@@ -185,7 +185,7 @@ app.get(routes.oAuth, (req, res) => {
     .then(webhookUrl => {
       res.send('success');
 
-      findAnimalPic
+      findAnimalPic()
         .then(picData => {
           postMessage(webhookUrl, picData);
         });
