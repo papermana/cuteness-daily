@@ -21,7 +21,7 @@ class ProcessingQueue {
     this.processingFunction(data);
 
     if (this.queue.length) {
-      this.process();
+      setTimeout(() => this.process(), 0);
     } else {
       this.processing = false;
     }
