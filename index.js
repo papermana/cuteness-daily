@@ -71,7 +71,9 @@ const makeUrl = (url, params) => {
   return `${url}?${stringifiedParams}`;
 };
 
-const isSadMessage = message => {
+const isSadMessage = originalMessage => {
+  const message = originalMessage.toLowerCase();
+
   return (
     message.includes(':(')
       || message.includes('sad')
